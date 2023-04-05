@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "989659940283",
+    "project_id": "in-travel-be8b6",
+    "storage_bucket": "in-travel-be8b6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:989659940283:android:4b1ed406c7e4a3bc37b09e",
+        "android_client_info": {
+          "package_name": "com.lglez.intravel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "989659940283-qgbfpl2jbmpbhvvkkoc2srhlspdt2g7e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjvxjgs7SkCWtJkRzlWuSCyYkfMZRnQa0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "989659940283-qgbfpl2jbmpbhvvkkoc2srhlspdt2g7e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
