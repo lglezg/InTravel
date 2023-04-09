@@ -28,38 +28,46 @@ import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.google.firebase.firestore.GeoPoint
 import com.google.maps.android.SphericalUtil
 import com.lglez.intravel.R
 import com.lglez.intravel.databinding.ActivityMapBinding
+import com.lglez.intravel.models.DriverLocation
 import com.lglez.intravel.providers.AuthProvider
 import com.lglez.intravel.providers.GeoProvider
+import com.lglez.intravel.utils.CarMoveAnim
+import org.imperiumlabs.geofirestore.callbacks.GeoQueryEventListener
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
-    private lateinit var vBind : ActivityMapBinding
+    private lateinit var vBind: ActivityMapBinding
 
-    private var googleMap : GoogleMap? = null
-    private var easyWayLocation : EasyWayLocation? = null
-    private var currentLocation : LatLng? = null
+    private var googleMap: GoogleMap? = null
+    private var easyWayLocation: EasyWayLocation? = null
+    private var currentLocation: LatLng? = null
     private var geoProvider = GeoProvider()
     private var authProvider = AuthProvider()
 
-    private  var places : PlacesClient? = null
-    private var  autocompleteOrigin: AutocompleteSupportFragment? = null
-    private var  autocompleteDestination: AutocompleteSupportFragment? = null
-    private var  originName = ""
-    private var  destinationName = ""
-    private var  originLatLng : LatLng? = null
-    private var  destinationLatLng : LatLng? = null
+    private var places: PlacesClient? = null
+    private var autocompleteOrigin: AutocompleteSupportFragment? = null
+    private var autocompleteDestination: AutocompleteSupportFragment? = null
+    private var originName = ""
+    private var destinationName = ""
+    private var originLatLng: LatLng? = null
+    private var destinationLatLng: LatLng? = null
     private var locationEnable = false
-
+    private val driverMarker = ArrayList<Marker>()
+    private val driversLocation = ArrayList<DriverLocation>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         vBind = ActivityMapBinding.inflate(layoutInflater)
         setContentView(vBind.root)
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -81,29 +89,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
         startGooglePlaces()
 
-        vBind.btnRequestTrip.setOnClickListener {  }
+        vBind.btnRequestTrip.setOnClickListener { }
     }
 
-    private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ permission ->
+    private val locationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permission ->
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            when{
-                permission.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)->{
-                    easyWayLocation?.startLocation()
-                }
-                permission.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)->{
-                    easyWayLocation?.startLocation()
-                }
-                else ->{
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                when {
+                    permission.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                        easyWayLocation?.startLocation()
+                    }
+                    permission.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                        easyWayLocation?.startLocation()
+                    }
+                    else -> {
 
+                    }
                 }
             }
+
         }
 
-    }
-
-    private fun startGooglePlaces(){
-        if (!Places.isInitialized()){
+    private fun startGooglePlaces() {
+        if (!Places.isInitialized()) {
             Places.initialize(applicationContext, "AIzaSyDsTt2fZg_vXx1nIf9IbojSwi5A-35FYnw")
         }
 
@@ -112,19 +121,25 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         initAcDestination()
     }
 
-    private fun limitSearch(){
+    private fun limitSearch() {
         currentLocation?.let {
             val northSide = SphericalUtil.computeOffset(it, 10000.0, 0.0)
             val southSide = SphericalUtil.computeOffset(it, 10000.0, 180.0)
 
             autocompleteOrigin?.setLocationBias(RectangularBounds.newInstance(southSide, northSide))
-            autocompleteDestination?.setLocationBias(RectangularBounds.newInstance(southSide, northSide))
+            autocompleteDestination?.setLocationBias(
+                RectangularBounds.newInstance(
+                    southSide,
+                    northSide
+                )
+            )
         }
 
     }
 
-    private fun initAcOrigin(){
-        autocompleteOrigin = supportFragmentManager.findFragmentById(R.id.placesAutocompleteOrigin) as AutocompleteSupportFragment
+    private fun initAcOrigin() {
+        autocompleteOrigin =
+            supportFragmentManager.findFragmentById(R.id.placesAutocompleteOrigin) as AutocompleteSupportFragment
         autocompleteOrigin?.apply {
             setPlaceFields(
                 listOf(
@@ -136,7 +151,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             )
             setHint("Lugar de recogida")
             setCountry("MX")
-            setOnPlaceSelectedListener(object : PlaceSelectionListener{
+            setOnPlaceSelectedListener(object : PlaceSelectionListener {
                 override fun onError(place: Status) {
 
                 }
@@ -149,8 +164,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             })
         }
     }
-    private fun initAcDestination(){
-        autocompleteDestination = supportFragmentManager.findFragmentById(R.id.placesAutocompleteDestination) as AutocompleteSupportFragment
+
+    private fun initAcDestination() {
+        autocompleteDestination =
+            supportFragmentManager.findFragmentById(R.id.placesAutocompleteDestination) as AutocompleteSupportFragment
         autocompleteDestination?.apply {
             setPlaceFields(
                 listOf(
@@ -162,7 +179,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             )
             setHint("Destino")
             setCountry("MX")
-            setOnPlaceSelectedListener(object : PlaceSelectionListener{
+            setOnPlaceSelectedListener(object : PlaceSelectionListener {
                 override fun onError(place: Status) {
 
                 }
@@ -203,7 +220,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             if (success != true)
                 Log.d("MAPAS", "Error: No se pudo encontrar el estilo")
 
-        } catch (e : Resources.NotFoundException){
+        } catch (e: Resources.NotFoundException) {
             Log.d("MAPAS", "Error: ${e.toString()}")
         }
 
@@ -219,11 +236,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         currentLocation?.let {
 
 
-            if (!locationEnable){
+            if (!locationEnable) {
                 locationEnable = true
-                googleMap?.moveCamera(CameraUpdateFactory.newCameraPosition(
-                    CameraPosition.builder().target(it).zoom(15f).build()
-                ))
+                googleMap?.moveCamera(
+                    CameraUpdateFactory.newCameraPosition(
+                        CameraPosition.builder().target(it).zoom(15f).build()
+                    )
+                )
+                getNearbyDrivers()
                 limitSearch()
             }
 
@@ -235,14 +255,18 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     }
 
-    private fun onCameraMove(){
-        googleMap?.setOnCameraIdleListener { 
+    private fun onCameraMove() {
+        googleMap?.setOnCameraIdleListener {
             try {
                 val geocoder = Geocoder(this)
                 originLatLng = googleMap?.cameraPosition?.target
                 originLatLng?.let {
-                    val addressList = geocoder.getFromLocation(originLatLng?.latitude!!, originLatLng?.longitude!!, 1)
-                    if (addressList.isNotEmpty()){
+                    val addressList = geocoder.getFromLocation(
+                        originLatLng?.latitude!!,
+                        originLatLng?.longitude!!,
+                        1
+                    )
+                    if (addressList.isNotEmpty()) {
                         val city = addressList[0].locality
                         val country = addressList[0].countryName
                         val address = addressList[0].getAddressLine(0)
@@ -252,10 +276,102 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
                 }
 
-            }catch (e: java.lang.Exception){
+            } catch (e: java.lang.Exception) {
                 Log.d("MAPAS", "ERROR: ${e.message}")
             }
         }
+    }
+
+
+    private fun getNearbyDrivers() {
+        currentLocation?.let {
+            geoProvider.getNearbyDriver(it, 50.0)
+                .addGeoQueryEventListener(object : GeoQueryEventListener {
+                    override fun onGeoQueryError(exception: Exception) {
+
+                    }
+
+                    override fun onGeoQueryReady() {
+
+                    }
+
+                    override fun onKeyEntered(documentID: String, location: GeoPoint) {
+                        for (marker in driverMarker) {
+                            if (marker.tag != null) {
+                                if (marker.tag == documentID) {
+                                    return
+                                }
+                            }
+                        }
+
+                        val driverLatLng = LatLng(location.latitude, location.longitude)
+                        val marker = googleMap?.addMarker(
+                            MarkerOptions().apply {
+                                position(driverLatLng)
+                                title("Conductor disponible")
+                                icon(
+                                    BitmapDescriptorFactory.fromResource(R.drawable.uber_car)
+                                )
+                            }
+                        )
+
+                        marker?.tag = documentID
+                        marker?.let { mk -> driverMarker.add(mk) }
+                        val dl = DriverLocation()
+                        dl.id = documentID
+                        driversLocation.add(dl)
+
+                    }
+
+                    override fun onKeyExited(documentID: String) {
+                        for (marker in driverMarker) {
+                            if (marker.tag != null) {
+                                if (marker.tag == documentID) {
+                                    marker.remove()
+                                    driverMarker.remove(marker)
+                                    driversLocation.removeAt(getPositionDriver(documentID))
+                                    return
+                                }
+                            }
+                        }
+                    }
+
+                    override fun onKeyMoved(documentID: String, location: GeoPoint) {
+                        for (marker in driverMarker) {
+                            val start = LatLng(location.latitude, location.longitude)
+                            var end : LatLng ? = null
+
+                            val position = getPositionDriver(marker.tag.toString())
+                            if (marker.tag != null) {
+                                if (marker.tag == documentID) {
+                                    //marker.position = LatLng(location.latitude, location.longitude)
+                                    if (driversLocation[position].latLng != null){
+                                        end = driversLocation[position].latLng
+                                    }
+                                    driversLocation[position].latLng = LatLng(location.latitude, location.longitude)
+                                    if (end != null){
+                                        CarMoveAnim.carAnim(marker, end, start)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                )
+        }
+    }
+
+    private  fun getPositionDriver(id: String): Int{
+        var position = 0
+        for (i in driversLocation.indices){
+            if (id == driversLocation[i].id){
+                position = i
+                break
+            }
+        }
+        return position
     }
 
     override fun onResume() {
@@ -272,10 +388,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         super.onPause()
         easyWayLocation?.endUpdates();
     }
-
-
-
-
 
 
 }
