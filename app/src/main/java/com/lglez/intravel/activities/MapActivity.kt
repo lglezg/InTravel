@@ -1,6 +1,7 @@
 package com.lglez.intravel.activities
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Geocoder
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.easywaylocation.EasyWayLocation
@@ -89,7 +91,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
         startGooglePlaces()
 
-        vBind.btnRequestTrip.setOnClickListener { }
+        vBind.btnRequestTrip.setOnClickListener { goToTripInfo ()}
     }
 
     private val locationPermission =
@@ -372,6 +374,23 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             }
         }
         return position
+    }
+
+    private fun  goToTripInfo(){
+        if (originLatLng != null && destinationLatLng != null){
+            val i = Intent( this, TripInfoActivity::class.java)
+                i.putExtra("origin", originName)
+                i.putExtra("destination", destinationName)
+                i.putExtra("origin_lat", originLatLng?.latitude)
+                i.putExtra("origin_lng", originLatLng?.longitude)
+                i.putExtra("destination_lat", destinationLatLng?.latitude)
+                i.putExtra("destination_lng", destinationLatLng?.longitude)
+            startActivity(i)
+        }  else{
+            Toast.makeText(this, "Debes seleccionar el origen y el destino", Toast.LENGTH_SHORT).show()
+        }
+
+
     }
 
     override fun onResume() {
