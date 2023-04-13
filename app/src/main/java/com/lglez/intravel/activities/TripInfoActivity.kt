@@ -36,6 +36,8 @@ class TripInfoActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Dire
     private var extraOriginLng : Double = 0.0
     private var extraDestinationLat: Double = 0.0
     private var extraDestinationLng : Double = 0.0
+    private var time : Double = 0.0
+    private var distance : Double = 0.0
 
     private  var originLatLng : LatLng ? = null
     private  var destinationLatLng : LatLng ? = null
@@ -212,8 +214,8 @@ class TripInfoActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Dire
         polyLineDetailsMap: HashMap<String, PolyLineDataBean>,
         polyLineDetailsArray: ArrayList<PolyLineDataBean>
     ) {
-        var distance = polyLineDetailsArray[1].distance.toDouble() // metros
-        var time = polyLineDetailsArray[1].time.toDouble() // segundos
+        distance = polyLineDetailsArray[1].distance.toDouble() // metros
+        time = polyLineDetailsArray[1].time.toDouble() // segundos
         distance = if (distance < 1000.0) 1000.0 else distance
         time= if (time < 60.0) 60.0 else time
         distance /= 1000
@@ -236,6 +238,8 @@ class TripInfoActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Dire
         i.putExtra("origin_lng", originLatLng?.longitude)
         i.putExtra("destination_lat", destinationLatLng?.latitude)
         i.putExtra("destination_lng", destinationLatLng?.longitude)
+        i.putExtra("time", time)
+        i.putExtra("distance", distance)
         startActivity(i)
     }
 }

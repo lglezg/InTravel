@@ -36,6 +36,7 @@ import com.lglez.intravel.R
 import com.lglez.intravel.databinding.ActivityMapBinding
 import com.lglez.intravel.models.DriverLocation
 import com.lglez.intravel.providers.AuthProvider
+import com.lglez.intravel.providers.BookingProvider
 import com.lglez.intravel.providers.GeoProvider
 import com.lglez.intravel.utils.CarMoveAnim
 import org.imperiumlabs.geofirestore.callbacks.GeoQueryEventListener
@@ -49,6 +50,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var currentLocation: LatLng? = null
     private var geoProvider = GeoProvider()
     private var authProvider = AuthProvider()
+    private var bookingProvider = BookingProvider()
 
     private var places: PlacesClient? = null
     private var autocompleteOrigin: AutocompleteSupportFragment? = null
@@ -391,6 +393,10 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         }
 
 
+    }
+
+    private fun removeBooking() {
+      bookingProvider.remove(authProvider.getId())
     }
 
     override fun onResume() {
