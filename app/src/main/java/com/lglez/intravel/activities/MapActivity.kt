@@ -34,6 +34,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.maps.android.SphericalUtil
 import com.lglez.intravel.R
 import com.lglez.intravel.databinding.ActivityMapBinding
+import com.lglez.intravel.models.Booking
 import com.lglez.intravel.models.DriverLocation
 import com.lglez.intravel.providers.AuthProvider
 import com.lglez.intravel.providers.BookingProvider
@@ -92,6 +93,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         )
 
         startGooglePlaces()
+        removeBooking()
 
         vBind.btnRequestTrip.setOnClickListener { goToTripInfo ()}
     }
@@ -396,7 +398,17 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     }
 
     private fun removeBooking() {
-      bookingProvider.remove(authProvider.getId())
+        bookingProvider.getBooking().get().addOnSuccessListener {document->
+            if (document.exists()){
+                val booking = document.toObject(Booking::class.java)
+                if (booking?.status == "create" || booking?.status == "cancel"){
+                    bookingProvider.remove(authProvider.getId())
+                }
+            }
+        }
+
+
+     //
     }
 
     override fun onResume() {

@@ -5,9 +5,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.MapTripActivity">
-    <TextView
+
+    <fragment
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.SupportMapFragment"/>
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TRIP"/>
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="50dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ESTADO DEL VIAJE:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/green"/>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="16sp"
+            android:layout_marginLeft="5dp"
+            android:textColor="@color/black"/>
+
+
+    </LinearLayout>
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
